@@ -1,0 +1,15 @@
+analyzer:
+  language:
+    strict-casts: true
+  errors:
+    todo: ignore
+    # Flutter 3.50 में material.dart को material_ui में बदला गया है, पर पुराने
+    # Flutter (3.2x/3.3x) के साथ भी चलना चाहिए — इसलिए पुराना इम्पोर्ट रखा है।
+    deprecated_member_use: ignore
+
+linter:
+  rules:
+    - avoid_print
+    - use_key_in_widget_constructors
+    - avoid_unnecessary_containers
+    - prefer_final_locals
