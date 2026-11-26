@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
@@ -29,6 +31,7 @@ class DarshanScreen extends StatefulWidget {
 
 class _DarshanScreenState extends State<DarshanScreen> with SingleTickerProviderStateMixin {
   late final AnimationController _glow;
+  Timer? _viewersTimer;
   int _viewers = 1284;
 
   @override
@@ -36,19 +39,15 @@ class _DarshanScreenState extends State<DarshanScreen> with SingleTickerProvider
     super.initState();
     _glow = AnimationController(vsync: this, duration: const Duration(milliseconds: 2600))
       ..repeat(reverse: true);
-    _tickViewers();
-  }
-
-  Future<void> _tickViewers() async {
-    while (mounted) {
-      await Future<void>.delayed(const Duration(seconds: 4));
+    _viewersTimer = Timer.periodic(const Duration(seconds: 4), (_) {
       if (!mounted) return;
       setState(() => _viewers = 1284 + DateTime.now().millisecondsSinceEpoch % 40);
-    }
+    });
   }
 
   @override
   void dispose() {
+    _viewersTimer?.cancel();
     _glow.dispose();
     super.dispose();
   }
