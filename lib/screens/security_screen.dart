@@ -57,6 +57,7 @@ class _SecurityScreenState extends State<SecurityScreen> with SingleTickerProvid
   late final AnimationController _walk;
   final Map<int, _Detection> _dets = {};
   final Map<int, Timer> _timers = {};
+  Timer? _scanTimer;
   SecurityAlert? _popup;
 
   @override
@@ -67,7 +68,7 @@ class _SecurityScreenState extends State<SecurityScreen> with SingleTickerProvid
   }
 
   void _startScanLoop() {
-    Timer.periodic(const Duration(seconds: 9), (timer) {
+    _scanTimer = Timer.periodic(const Duration(seconds: 9), (timer) {
       if (!mounted) {
         timer.cancel();
         return;
@@ -118,6 +119,7 @@ class _SecurityScreenState extends State<SecurityScreen> with SingleTickerProvid
 
   @override
   void dispose() {
+    _scanTimer?.cancel();
     for (final t in _timers.values) {
       t.cancel();
     }
