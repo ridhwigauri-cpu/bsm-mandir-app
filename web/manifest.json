@@ -1,0 +1,17 @@
+{
+  "name": "बाबा सिद्धनाथ मंदिर",
+  "short_name": "सिद्धनाथ मंदिर",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#5E0F18",
+  "theme_color": "#5E0F18",
+  "description": "मंदिर जीर्णोद्धार सेवा फाउंडेशन — दान, दर्शन, पूजा, धर्मशाला बुकिंग एवं AI सुरक्षा",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
+  "icons": [
+    { "src": "icons/Icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icons/Icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "icons/Icon-maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "icons/Icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
