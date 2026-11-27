@@ -26,6 +26,12 @@ class AppConfig {
   // अभी खाली — जब Node/Postgres बैकएंड तैयार हो तब भरें।
   static const String apiBaseUrl = '';
 
+  // ── 4b. मंदिर परिसर का PA (घोषणा) सिस्टम ──────────────────────────
+  // दान होने पर घोषणा यहाँ POST होती है: {name, amount, text}
+  // उदाहरण: 'https://pa.bsmmandir.org'  (Raspberry Pi / PC + स्पीकर)
+  static const String paSystemUrl = '';
+  static const String paSystemKey = '';
+
   // ── 5. पुश नोटिफिकेशन (FCM) ────────────────────────────────────────
   // Firebase प्रोजेक्ट बनने पर `android/app/google-services.json` डालें और
   // `docs/SETUP_SERVICES.md` के FCM हिस्से के हिसाब से pubspec में
@@ -37,6 +43,7 @@ class AppConfig {
   static bool get hasLiveStream => liveStreamUrl.trim().isNotEmpty;
   static bool get hasSecurityApi => securityApiBaseUrl.trim().isNotEmpty;
   static bool get hasBackend => apiBaseUrl.trim().isNotEmpty;
+  static bool get hasPaSystem => paSystemUrl.trim().isNotEmpty;
 
   /// जब तक कोई असली सेवा कॉन्फ़िगर नहीं, ऐप डेमो डेटा से चलता है।
   static bool get isDemoMode =>

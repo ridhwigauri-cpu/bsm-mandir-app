@@ -12,6 +12,7 @@ import 'screens/puja_screen.dart';
 import 'screens/security_screen.dart';
 import 'theme/app_colors.dart';
 import 'widgets/common.dart';
+import 'widgets/three_d.dart';
 
 class _TabItem {
   const _TabItem(this.key, this.label, this.icon);
@@ -23,11 +24,11 @@ class _TabItem {
 
 const List<_TabItem> _tabs = [
   _TabItem('home', 'होम', 'home'),
-  _TabItem('daan', 'दान', 'heart'),
-  _TabItem('darshan', 'दर्शन', 'video'),
-  _TabItem('puja', 'पूजा', 'temple'),
+  _TabItem('daan', 'दान', 'rupee'),
+  _TabItem('darshan', 'दर्शन', 'eye'),
+  _TabItem('puja', 'पूजा', 'lamp'),
   _TabItem('dharamshala', 'धर्मशाला', 'bed'),
-  _TabItem('about', 'परिचय', 'info'),
+  _TabItem('about', 'परिचय', 'book'),
 ];
 
 /// ऐप का ढाँचा: हेडर + बॉटम टैब + एडमिन/AI सुरक्षा व्यू
@@ -129,27 +130,17 @@ class _Header extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-      decoration: const BoxDecoration(
-        color: C.deep,
-        border: Border(bottom: BorderSide(color: Color(0x4DE8B54A))),
-      ),
+    return ThreeDPanel(
+      radius: 0,
+      padding: const EdgeInsets.fromLTRB(10, 8, 10, 9),
+      colors: const [C.headerTop, C.headerMid, C.headerBottom],
+      borderColor: C.gold,
       child: Row(
         children: [
           if (showBack)
             _CircleIcon(icon: 'close', onTap: onBack, active: false)
           else
-            Container(
-              width: 36,
-              height: 36,
-              alignment: Alignment.center,
-              decoration: const BoxDecoration(color: C.gold, shape: BoxShape.circle),
-              child: const Text(
-                'ॐ',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.w800, color: C.maroon),
-              ),
-            ),
+            const LogoBadge(size: 40),
           const SizedBox(width: 9),
           const Expanded(
             child: Column(
@@ -160,15 +151,17 @@ class _Header extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.w800,
                     color: C.creamText,
+                    shadows: [Shadow(color: Color(0x88000000), blurRadius: 4)],
                   ),
                 ),
                 Text(
-                  'जीर्णोद्धार सेवा फाउंडेशन · v1.0',
+                  'जीर्णोद्धार सेवा फाउंडेशन · तेलहारा',
                   maxLines: 1,
-                  style: TextStyle(fontSize: 10, color: C.creamTextDim),
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 9.5, color: C.gold2, fontWeight: FontWeight.w600),
                 ),
               ],
             ),
@@ -217,52 +210,81 @@ class _BottomTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: const BoxDecoration(
-        color: C.paper,
-        border: Border(top: BorderSide(color: C.line)),
-      ),
-      padding: const EdgeInsets.symmetric(vertical: 6),
+    return ThreeDPanel(
+      radius: 0,
+      padding: EdgeInsets.zero,
+      colors: const [C.headerMid, C.headerBottom],
+      borderColor: C.gold,
       child: SafeArea(
         top: false,
-        child: Row(
-          children: [
-            for (final t in _tabs)
-              Expanded(
-                child: InkWell(
-                  onTap: () => onSelect(t.key),
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 2),
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: current == t.key ? C.amber2 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 5),
+          child: Row(
+            children: [
+              for (final t in _tabs)
+                Expanded(
+                  child: InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => onSelect(t.key),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 2, horizontal: 2),
+                      child: Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // उभरा हुआ (3D) आइकन बटन
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(11),
+                              gradient: current == t.key
+                                  ? const LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [C.gold2, C.gold],
+                                    )
+                                  : null,
+                              color: current == t.key ? null : const Color(0x22FFFFFF),
+                              border: Border.all(
+                                color: current == t.key
+                                    ? C.goldDeep
+                                    : const Color(0x33FFFFFF),
+                                width: 1,
+                              ),
+                              boxShadow: current == t.key
+                                  ? const [
+                                      BoxShadow(
+                                        color: Color(0x66000000),
+                                        blurRadius: 6,
+                                        offset: Offset(0, 3),
+                                      ),
+                                    ]
+                                  : null,
+                            ),
+                            child: AppIcon(
+                              t.icon,
+                              size: 18,
+                              color: current == t.key ? C.deep : C.gold2,
+                            ),
                           ),
-                          child: AppIcon(
-                            t.icon,
-                            size: 19,
-                            color: current == t.key ? C.maroon2 : const Color(0xFF9A8288),
+                          const SizedBox(height: 3),
+                          Text(
+                            t.label,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 8.5,
+                              fontWeight:
+                                  current == t.key ? FontWeight.w800 : FontWeight.w600,
+                              color: current == t.key ? C.gold2 : C.creamTextDim,
+                            ),
                           ),
-                        ),
-                        Text(
-                          t.label,
-                          maxLines: 1,
-                          style: TextStyle(
-                            fontSize: 8.5,
-                            fontWeight: current == t.key ? FontWeight.w700 : FontWeight.w600,
-                            color: current == t.key ? C.maroon2 : const Color(0xFF9A8288),
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

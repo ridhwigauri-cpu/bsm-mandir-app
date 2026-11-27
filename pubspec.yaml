@@ -1,7 +1,7 @@
 name: bsm_mandir
 description: "बाबा सिद्धनाथ मंदिर जीर्णोद्धार सेवा फाउंडेशन — डिजिटल प्रबंधन एवं AI सुरक्षा ऐप"
 publish_to: 'none'
-version: 1.6.1+8
+version: 1.7.0+9
 
 environment:
   sdk: ^3.14.0
@@ -15,6 +15,7 @@ dependencies:
   video_player: ^2.14.1      # 24x7 लाइव दर्शन (HLS)
   http: ^1.6.0               # AI सुरक्षा API
   printing: ^5.15.1          # रसीद/पास का PDF (सेव/शेयर/प्रिंट)
+  flutter_tts: ^4.2.5        # दान की घोषणा + 'जय बाबा सिद्धनाथ'
 
 dev_dependencies:
   flutter_test:

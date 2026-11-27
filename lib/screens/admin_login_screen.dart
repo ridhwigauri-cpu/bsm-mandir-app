@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../theme/app_colors.dart';
 import '../widgets/common.dart';
+import '../widgets/three_d.dart';
 
 class AdminLoginScreen extends StatefulWidget {
   const AdminLoginScreen({super.key, required this.onLogin, required this.onCancel});
@@ -46,14 +47,15 @@ class _AdminLoginScreenState extends State<AdminLoginScreen> {
             child: Column(
               children: [
                 Container(
-                  width: 60,
-                  height: 60,
-                  alignment: Alignment.center,
-                  decoration: const BoxDecoration(color: C.gold, shape: BoxShape.circle),
-                  child: const Text(
-                    'ॐ',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: C.maroon),
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(colors: [C.gold2, C.goldDeep]),
+                    boxShadow: [
+                      BoxShadow(color: Color(0x33000000), blurRadius: 10, offset: Offset(0, 4)),
+                    ],
                   ),
+                  child: const LogoBadge(size: 72),
                 ),
                 const SizedBox(height: 12),
                 const Text(

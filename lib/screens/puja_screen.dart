@@ -10,6 +10,7 @@ import '../utils/docs.dart';
 import '../utils/format.dart';
 import '../services/pdf_service.dart';
 import '../widgets/common.dart';
+import '../widgets/three_d.dart';
 import 'daan_screen.dart' show StepTag;
 
 class PujaScreen extends StatefulWidget {
@@ -106,6 +107,12 @@ class _PujaScreenState extends State<PujaScreen> {
 
     return BsmScreen(
       children: [
+        const FeatheredBanner(
+          image: 'assets/images/mandir_original.jpg',
+          title: 'पूजा व VIP दर्शन',
+          subtitle: 'स्लॉट बुक करें · QR पास से सीधे प्रवेश',
+          badge: 'पूजा बुकिंग',
+        ),
         if (pass != null)
           BsmCard(
             borderColor: const Color(0x591E7A46),

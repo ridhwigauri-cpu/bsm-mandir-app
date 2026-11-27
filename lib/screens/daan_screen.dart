@@ -9,8 +9,10 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/docs.dart';
 import '../utils/format.dart';
+import '../services/announcement_service.dart';
 import '../services/pdf_service.dart';
 import '../widgets/common.dart';
+import '../widgets/three_d.dart';
 import '../widgets/donation_certificate.dart';
 import '../widgets/donation_qr_card.dart';
 
@@ -65,6 +67,12 @@ class _DaanScreenState extends State<DaanScreen> {
         result.status == PayStatus.demo
             ? 'डेमो भुगतान सफल · 80G रसीद जारी'
             : 'भुगतान सफल · 80G रसीद जारी',
+      );
+      // घोषणा: फ़ोन पर आवाज़ + मंदिर परिसर के PA सिस्टम पर (एक साथ)
+      AnnouncementService.announceDonation(
+        name: donation.name,
+        amount: donation.amt,
+        category: donation.cat,
       );
       return;
     }
@@ -266,6 +274,12 @@ class _DaanScreenState extends State<DaanScreen> {
 
     return BsmScreen(
       children: [
+        const FeatheredBanner(
+          image: 'assets/images/mandir_original.jpg',
+          title: 'मंदिर जीर्णोद्धार में सहयोग',
+          subtitle: 'बाबा सिद्धनाथ मंदिर, तेलहारा · आपका दान सीधे मंदिर कार्य में',
+          badge: 'दान सेवा',
+        ),
         BsmCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

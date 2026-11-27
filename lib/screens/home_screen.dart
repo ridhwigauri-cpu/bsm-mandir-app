@@ -6,6 +6,7 @@ import '../theme/app_theme.dart';
 import '../utils/format.dart';
 import '../widgets/brand_footer.dart';
 import '../widgets/common.dart';
+import '../widgets/three_d.dart';
 
 class _Tile {
   const _Tile(this.tab, this.icon, this.title, this.desc);
@@ -57,32 +58,36 @@ class HomeScreen extends StatelessWidget {
 
     return BsmScreen(
       children: [
-        HeroBlock(
+        const FeatheredBanner(
+          image: 'assets/images/mandir_original.jpg',
+          title: 'जय बाबा सिद्धनाथ',
+          subtitle: 'बाबा सिद्धनाथ मंदिर · तेलहारा (नालंदा), बिहार',
+          height: 196,
+          badge: 'मंदिर दर्शन',
+        ),
+        ThreeDPanel(
+          padding: const EdgeInsets.fromLTRB(14, 12, 14, 13),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
-                'जय बाबा सिद्धनाथ',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: C.creamText),
-              ),
-              const SizedBox(height: 5),
-              const Text(
-                'मंदिर जीर्णोद्धार में आपका योगदान — पारदर्शी, डिजिटल और सुरक्षित',
-                style: TextStyle(fontSize: 11.5, color: C.creamTextDim, height: 1.5),
-              ),
-              const SizedBox(height: 9),
               Text(
                 inr(funds.total),
                 style: const TextStyle(
-                  fontSize: 23,
+                  fontSize: 24,
                   fontWeight: FontWeight.w800,
                   color: C.gold2,
+                  shadows: [Shadow(color: Color(0x88000000), blurRadius: 5)],
                 ),
               ),
               const SizedBox(height: 3),
               Text(
                 'अब तक कुल दान प्राप्त · ${state.donations.length} ऑनलाइन रसीदें',
                 style: const TextStyle(fontSize: 10.5, color: C.creamTextDim),
+              ),
+              const SizedBox(height: 2),
+              const Text(
+                'मंदिर जीर्णोद्धार में आपका योगदान — पारदर्शी, डिजिटल और सुरक्षित',
+                style: TextStyle(fontSize: 11, color: C.creamTextDim, height: 1.45),
               ),
             ],
           ),

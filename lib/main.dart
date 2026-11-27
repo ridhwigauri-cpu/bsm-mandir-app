@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app.dart';
 import 'data/app_state.dart';
+import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 
 void main() => runApp(const BsmApp());
@@ -31,8 +32,28 @@ class _BsmAppState extends State<BsmApp> {
         title: 'बाबा सिद्धनाथ मंदिर',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.build(),
-        home: const RootShell(),
+        home: const _SplashGate(),
       ),
     );
+  }
+}
+
+/// ऐप खुलते ही स्प्लैश (लोगो + "जय बाबा सिद्धनाथ" + आवाज़), फिर मुख्य स्क्रीन
+class _SplashGate extends StatefulWidget {
+  const _SplashGate();
+
+  @override
+  State<_SplashGate> createState() => _SplashGateState();
+}
+
+class _SplashGateState extends State<_SplashGate> {
+  bool _done = false;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!_done) {
+      return SplashScreen(onDone: () => setState(() => _done = true));
+    }
+    return const RootShell();
   }
 }

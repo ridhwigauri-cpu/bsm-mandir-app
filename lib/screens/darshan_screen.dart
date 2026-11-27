@@ -8,6 +8,7 @@ import '../services/stream_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
+import '../widgets/three_d.dart';
 
 class _AartiItem {
   const _AartiItem(this.time, this.name, this.status, this.tone);
@@ -59,6 +60,12 @@ class _DarshanScreenState extends State<DarshanScreen> with SingleTickerProvider
   Widget build(BuildContext context) {
     return BsmScreen(
       children: [
+        const FeatheredBanner(
+          image: 'assets/images/mandir_original.jpg',
+          title: 'श्री बाबा सिद्धनाथ मंदिर',
+          subtitle: 'तेलहारा (नालंदा), बिहार · चौबीसों घंटे दर्शन',
+          badge: 'लाइव दर्शन',
+        ),
         BsmCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

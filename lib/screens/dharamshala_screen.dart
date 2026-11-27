@@ -10,6 +10,7 @@ import '../utils/docs.dart';
 import '../utils/format.dart';
 import '../services/pdf_service.dart';
 import '../widgets/common.dart';
+import '../widgets/three_d.dart';
 import 'daan_screen.dart' show StepTag;
 
 class DharamshalaScreen extends StatefulWidget {
@@ -106,6 +107,12 @@ class _DharamshalaScreenState extends State<DharamshalaScreen> {
 
     return BsmScreen(
       children: [
+        const FeatheredBanner(
+          image: 'assets/images/dharamshala_original.jpg',
+          title: 'श्री बजरंगबली धर्मशाला',
+          subtitle: 'तेलहारा · कमरा व अखंड कीर्तन बुकिंग',
+          badge: 'धर्मशाला बुकिंग',
+        ),
         if (booking != null)
           BsmCard(
             borderColor: const Color(0x591E7A46),
