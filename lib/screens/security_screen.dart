@@ -7,6 +7,7 @@ import '../data/app_state.dart';
 import '../data/base_data.dart';
 import '../data/models.dart';
 import '../theme/app_colors.dart';
+import '../services/security_api.dart';
 import '../utils/format.dart';
 import '../widgets/common.dart';
 
@@ -89,20 +90,26 @@ class _SecurityScreenState extends State<SecurityScreen> with SingleTickerProvid
     });
   }
 
-  void _trigger([int? index]) {
+  Future<void> _trigger([int? index]) async {
     final i = index ?? math.Random().nextInt(BaseData.cams.length);
     final cam = BaseData.cams[i];
-    final conf = 92 + math.Random().nextInt(7);
+
+    // AI सर्विस जुड़ी हो तो असली डिटेक्शन, वरना सिमुलेशन
+    final apiResult = await SecurityApi.detect(camId: cam.id);
+    if (!mounted) return;
+
+    final label = apiResult?.label ?? 'अनधिकृत प्रवेश';
+    final conf = apiResult?.confidence ?? (92 + math.Random().nextInt(7));
 
     setState(() {
-      _dets[i] = _Detection(conf: conf, label: 'अनधिकृत प्रवेश $conf%', alert: true);
+      _dets[i] = _Detection(conf: conf, label: '$label $conf%', alert: true);
     });
 
     final alert = SecurityAlert(
       id: newId('EVD'),
       camId: cam.id,
       cam: cam.name,
-      label: 'अनधिकृत प्रवेश',
+      label: label,
       conf: conf,
       ts: DateTime.now(),
       location: '${cam.name}, बाबा सिद्धनाथ मंदिर परिसर',

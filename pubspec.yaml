@@ -1,16 +1,19 @@
 name: bsm_mandir
 description: "बाबा सिद्धनाथ मंदिर जीर्णोद्धार सेवा फाउंडेशन — डिजिटल प्रबंधन एवं AI सुरक्षा ऐप"
 publish_to: 'none'
-version: 1.0.0+1
+version: 1.1.0+2
 
 environment:
   sdk: ^3.14.0
 
-# जान-बूझकर शून्य बाहरी पैकेज — `flutter pub get` बिना किसी वर्ज़न टकराव के चलता है।
-# वैकल्पिक पैकेज README.md के "आगे क्या जोड़ें" हिस्से में दिए हैं।
+# असली सेवाओं के पैकेज — keys/URLs `lib/config/app_config.dart` में डालें।
+# (वहाँ खाली छोड़ने पर सेवा डेमो मोड में चलती रहती है।)
 dependencies:
   flutter:
     sdk: flutter
+  razorpay_flutter: ^1.4.7   # भुगतान (दान)
+  video_player: ^2.14.1      # 24x7 लाइव दर्शन (HLS)
+  http: ^1.6.0               # AI सुरक्षा API
 
 dev_dependencies:
   flutter_test:

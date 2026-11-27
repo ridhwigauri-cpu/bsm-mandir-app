@@ -2,6 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../config/app_config.dart';
+import '../services/stream_service.dart';
+
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../widgets/common.dart';
@@ -60,7 +63,10 @@ class _DarshanScreenState extends State<DarshanScreen> with SingleTickerProvider
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              ClipRRect(
+              if (AppConfig.hasLiveStream)
+                LiveStreamView(url: AppConfig.liveStreamUrl)
+              else
+                ClipRRect(
                 borderRadius: BorderRadius.circular(14),
                 child: SizedBox(
                   height: 230,
@@ -157,8 +163,10 @@ class _DarshanScreenState extends State<DarshanScreen> with SingleTickerProvider
                 ],
               ),
               const SizedBox(height: 9),
-              const MutedText(
-                'डेमो स्क्रीन — लाइव में मंदिर का असली HD कैमरा फ़ीड दिखेगा',
+              MutedText(
+                AppConfig.hasLiveStream
+                    ? 'लाइव स्ट्रीम · ${AppConfig.liveStreamUrl}'
+                    : 'डेमो स्क्रीन — AppConfig.liveStreamUrl भरते ही असली HD फ़ीड चालू',
                 textAlign: TextAlign.center,
               ),
             ],

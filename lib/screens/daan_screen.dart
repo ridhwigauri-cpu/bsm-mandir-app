@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import '../data/app_state.dart';
 import '../data/base_data.dart';
 import '../data/models.dart';
+import '../services/payment_service.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/docs.dart';
@@ -27,6 +28,50 @@ class _DaanScreenState extends State<DaanScreen> {
   String _method = BaseData.methods.first;
   bool _busy = false;
   Donation? _done;
+
+  late final PaymentService _payment;
+
+  @override
+  void initState() {
+    super.initState();
+    _payment = PaymentService(onResult: _handlePayment);
+  }
+
+  @override
+  void dispose() {
+    _payment.dispose();
+    super.dispose();
+  }
+
+  /// Razorpay (या डेमो) से भुगतान का नतीजा
+  void _handlePayment(PayResult result) {
+    if (!mounted) return;
+    setState(() => _busy = false);
+
+    if (result.isPaid) {
+      final donation = widget.state.addDonation(
+        name: _name.trim(),
+        phone: _phone.trim(),
+        cat: _cat,
+        amt: _amount,
+        method: _payment.isLive ? 'Razorpay' : _method,
+      );
+      setState(() => _done = donation);
+      showToast(
+        context,
+        result.status == PayStatus.demo
+            ? 'डेमो भुगतान सफल · 80G रसीद जारी'
+            : 'भुगतान सफल · 80G रसीद जारी',
+      );
+      return;
+    }
+
+    if (result.status == PayStatus.cancelled) {
+      showToast(context, 'भुगतान रद्द किया गया');
+    } else {
+      showToast(context, result.message.isEmpty ? 'भुगतान विफल रहा' : result.message);
+    }
+  }
 
   int get _amount => int.tryParse(_amtText) ?? 0;
 
@@ -53,23 +98,16 @@ class _DaanScreenState extends State<DaanScreen> {
       context,
       StatefulBuilder(
         builder: (sheetContext, setSheetState) {
-          Future<void> confirm() async {
+          void confirm() {
             setSheetState(() => _busy = true);
-            await Future<void>.delayed(const Duration(milliseconds: 1400));
-            final donation = widget.state.addDonation(
+            Navigator.of(sheetContext).pop();
+            // key भरी हो तो Razorpay चेकआउट खुलता है, वरना डेमो भुगतान
+            _payment.start(
+              amountRupees: _amount,
               name: _name.trim(),
               phone: _phone.trim(),
-              cat: _cat,
-              amt: _amount,
-              method: _method,
+              description: '$_cat दान',
             );
-            if (!mounted) return;
-            Navigator.of(sheetContext).pop();
-            setState(() {
-              _busy = false;
-              _done = donation;
-            });
-            showToast(context, 'भुगतान सफल · 80G रसीद जारी');
           }
 
           return Column(
@@ -129,8 +167,10 @@ class _DaanScreenState extends State<DaanScreen> {
                   onPressed: confirm,
                 ),
                 const SizedBox(height: 10),
-                const MutedText(
-                  'डेमो गेटवे — असली ऐप में Razorpay / PhonePe / PayU जुड़ेगा',
+                MutedText(
+                  _payment.isLive
+                      ? 'Razorpay सुरक्षित चेकआउट · UPI / कार्ड / नेटबैंकिंग'
+                      : 'डेमो गेटवे — AppConfig.razorpayKeyId भरते ही असली Razorpay चालू',
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 10),

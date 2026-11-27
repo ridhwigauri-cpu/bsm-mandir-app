@@ -70,6 +70,12 @@ lib/
 │   ├── storage.dart             प्लेटफ़ॉर्म के हिसाब से स्टोरेज चुनने वाला शिम
 │   ├── storage_io.dart          फ़ोन: फ़ाइल में JSON
 │   └── storage_stub.dart        वेब/टेस्ट: मेमोरी
+├── config/app_config.dart       सारी keys/URLs (Razorpay, HLS, AI, backend)
+├── services/
+│   ├── payment_service.dart     Razorpay चेकआउट (+ डेमो fallback)
+│   ├── stream_service.dart      HLS लाइव दर्शन प्लेयर
+│   ├── security_api.dart        YOLOv8 /detect क्लाइंट (+ सिमुलेशन fallback)
+│   └── notifications_service.dart  FCM के लिए तैयार ढाँचा
 ├── utils/
 │   ├── format.dart              ₹25,00,000 (भारतीय गिनती), तारीख़ें, राशि शब्दों में
 │   ├── qr.dart                  डेमो QR मैट्रिक्स
@@ -102,16 +108,28 @@ tool/logic_check.dart            शुद्ध Dart जाँच (flutter क�
 | एडमिन पिन | `lib/screens/admin_login_screen.dart` (डेमो `1088`) |
 | ऐप का नाम / पैकेज | `pubspec.yaml`, `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml` |
 
-### आगे क्या जोड़ें (ज़रूरत के हिसाब से)
+## असली सेवाएँ — integration तैयार है
+
+चारों सेवाओं का कोड जुड़ा हुआ है; सिर्फ़ keys/URLs भरने हैं — सब एक ही फ़ाइल में:
+**`lib/config/app_config.dart`**
+
+| सेवा | पैकेज | key/URL | विस्तार |
+|---|---|---|---|
+| भुगतान (दान + 80G रसीद) | `razorpay_flutter` | `razorpayKeyId` | [SETUP §1](docs/SETUP_SERVICES.md) |
+| 24x7 लाइव दर्शन | `video_player` (HLS) | `liveStreamUrl` | [SETUP §2](docs/SETUP_SERVICES.md) |
+| AI सुरक्षा (YOLOv8) | `http` | `securityApiBaseUrl` | [SETUP §3](docs/SETUP_SERVICES.md) |
+| पुश नोटिफिकेशन (FCM) | — (Firebase बाद में) | `google-services.json` | [SETUP §4](docs/SETUP_SERVICES.md) |
+
+जो खाली है, वह सेवा **डेमो मोड** में चलती रहती है — ऐप कभी नहीं टूटता।
+पूरी गाइड (अकाउंट बनाना, KYC, RTMP→HLS, YOLO सर्विस, Firebase): **[docs/SETUP_SERVICES.md](docs/SETUP_SERVICES.md)**
+
+### अभी भी वैकल्पिक (ज़रूरत पड़े तो)
 
 ```bash
 flutter pub add shared_preferences   # पक्का स्टोरेज (अभी फ़ाइल/मेमोरी)
 flutter pub add printing             # रसीद/पास का PDF (HTML तैयार है)
 flutter pub add share_plus           # रसीद WhatsApp पर भेजना
-flutter pub add video_player         # 24x7 लाइव दर्शन (HLS)
-flutter pub add qr_flutter           # असली QR
-flutter pub add http dio             # बैकएंड API
-flutter pub add firebase_messaging   # आरती/श्रृंगार पुश नोटिफिकेशन
+flutter pub add qr_flutter           # असली QR (अभी CustomPainter)
 ```
 
 ---
@@ -119,9 +137,11 @@ flutter pub add firebase_messaging   # आरती/श्रृंगार प
 ## प्रोडक्शन चेकलिस्ट
 
 - [ ] बैकएंड API (Node/Postgres) — दान, स्लॉट, धर्मशाला, रसीद, ऑडिट लॉग
-- [ ] पेमेंट गेटवे + सर्वर वेबहुक → रसीद स्वतः बने
+- [x] पेमेंट गेटवे (Razorpay) जुड़ा — key भरनी है, signature verify बैकएंड से
+- [ ] सर्वर वेबहुक → रसीद स्वतः बने
 - [ ] असली लॉगिन (OTP + डिवाइस बाइंडिंग) — अभी डेमो पिन
-- [ ] मंदिर कैमरे → RTMP → HLS → ऐप में लाइव
+- [x] लाइव दर्शन प्लेयर (HLS) जुड़ा — स्ट्रीम URL भरना है
+- [ ] मंदिर कैमरे → RTMP → HLS स्ट्रीम चालू करना
 - [ ] YOLOv8 सर्विस + FCM पुश + थाना SMS (DLT टेम्पलेट)
 - [ ] Aadhaar सत्यापन UIDAI-अनुमत प्रदाता से (या दस्तावेज़ अपलोड)
 - [ ] Play Store: कीस्टोर, गोपनीयता नीति, डेटा सेफ़्टी फ़ॉर्म
