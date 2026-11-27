@@ -1,5 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bsm_mandir/utils/format.dart';
+import 'package:bsm_mandir/data/models.dart';
+import 'package:bsm_mandir/utils/docs.dart';
 import 'package:bsm_mandir/utils/qr.dart';
 
 void main() {
@@ -54,5 +56,25 @@ void main() {
     expect(a.startsWith('BSM-PJ-'), isTrue);
     expect(a.length, 'BSM-PJ-'.length + 5);
     expect(a == b, isFalse);
+  });
+
+  test('रसीद डिज़ाइन — ₹5,000 से अधिक पर प्रशस्ति पत्र', () {
+    final big = Donation(
+      id: 'DN-1', name: 'रमेश शर्मा', phone: '9876543210', cat: 'जीर्णोद्धार',
+      amt: 11000, method: 'UPI', ts: DateTime(2026, 11, 27), receipt: '80G/2026-27/1001',
+    );
+    final html = receiptHtml(big);
+    expect(html.contains('दान प्रशस्ति पत्र'), isTrue);
+    expect(html.contains('Certificate of Commendation'), isTrue);
+    expect(html.contains('U94910BR2026NPL085916'), isTrue);
+    expect(html.contains('₹11,000'), isTrue);
+    expect(receiptText(big).contains('दान प्रशस्ति पत्र'), isTrue);
+
+    final small = Donation(
+      id: 'DN-2', name: 'सुनीता देवी', phone: '9812345678', cat: 'अन्नदान',
+      amt: 1100, method: 'UPI', ts: DateTime(2026, 11, 27), receipt: '80G/2026-27/1002',
+    );
+    expect(receiptHtml(small).contains('दान रसीद'), isTrue);
+    expect(receiptHtml(small).contains('Certificate of Commendation'), isFalse);
   });
 }

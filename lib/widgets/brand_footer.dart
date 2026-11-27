@@ -39,7 +39,8 @@ class BrandFooter extends StatelessWidget {
           ),
           const SizedBox(height: 10),
           const MutedText(
-            'पंजीकृत धर्मार्थ न्यास · पंजीयन दिनांक 25 जून 2026 · ग्राम/पोस्ट — तेलहारा',
+            'Section 8 कंपनी · CIN U94910BR2026NPL085916\n'
+            'पंजीयन 25 जून 2026 · तेलहारा (नालंदा), बिहार',
             textAlign: TextAlign.center,
             size: 9.5,
           ),

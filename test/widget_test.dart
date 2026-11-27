@@ -37,6 +37,8 @@ void main() {
 
     expect(find.text('ऑनलाइन दान'), findsOneWidget);
     expect(find.text('UPI / कार्ड से भुगतान करें'), findsOneWidget);
+    expect(find.text('QR से सीधे दान करें'), findsOneWidget);
+    expect(find.textContaining('6203051369m@pnb'), findsWidgets);
 
     // नाम खाली है — भुगतान शीट नहीं खुलनी चाहिए
     await tester.tap(find.text('UPI / कार्ड से भुगतान करें'));
@@ -71,5 +73,7 @@ void main() {
     expect(find.text('हमारी कहानी'), findsOneWidget);
     expect(find.text('सेवा-इतिहास (क्रमवार)'), findsOneWidget);
     expect(find.textContaining('25 जून 2026'), findsWidgets);
+    expect(find.text('पंजीयन एवं प्रमाण'), findsOneWidget);
+    expect(find.text('CIN'), findsOneWidget);
   });
 }

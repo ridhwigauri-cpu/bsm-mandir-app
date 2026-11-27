@@ -17,7 +17,7 @@
 | हिस्सा | स्क्रीन |
 |---|---|
 | **भक्त ऐप** | होम · दान (80G रसीद) · 24x7 लाइव दर्शन · पूजा/VIP पास · धर्मशाला व अखंड कीर्तन |
-| **परिचय** | फाउंडेशन का सेवा-इतिहास (2000 से) · संस्थापक एवं उत्तराधिकारी · परिसर की तस्वीरें · मूल दस्तावेज़ |
+| **परिचय** | फाउंडेशन का सेवा-इतिहास (2000 से) · संस्थापक एवं उत्तराधिकारी · **पंजीयन एवं प्रमाण-पत्र** (CIN, PAN, TAN, Section 8) · परिसर की तस्वीरें · मूल दस्तावेज़ |
 | **एडमिन डैशबोर्ड** | कुल दान/बैंक/नकद · चालू परियोजनाएँ · स्टाफ व वेतन · माह-वार लेखा · लाइव ऑक्यूपेंसी · रसीदें — **डेमो पिन `1088`** |
 | **AI सुरक्षा** | 6 कैमरा ग्रिड, YOLOv8 स्टाइल डिटेक्शन बॉक्स, घटना सिमुलेशन, 10-सेकंड क्लिप साक्ष्य, थाना SMS/E-mail लॉग |
 
@@ -110,6 +110,45 @@ tool/logic_check.dart            शुद्ध Dart जाँच (flutter क�
 | Aadhaar e-KYC | `lib/screens/dharamshala_screen.dart` → `_verify()` |
 | एडमिन पिन | `lib/screens/admin_login_screen.dart` (डेमो `1088`) |
 | ऐप का नाम / पैकेज | `pubspec.yaml`, `android/app/build.gradle.kts`, `android/app/src/main/AndroidManifest.xml` |
+
+## पंजीयन विवरण (ऐप के "परिचय" टैब में भी है)
+
+| | |
+|---|---|
+| कानूनी नाम | BABA SIDHHNATH MANDIR JIRNODHAR SEVA FOUNDATION |
+| CIN | U94910BR2026NPL085916 |
+| PAN | AAOCB8762B |
+| TAN | PTNB10218F |
+| Section 8 लाइसेंस | 187252 (25 जून 2026) |
+| प्रकार | Section 8 कंपनी, company limited by guarantee |
+| पंजीयन प्राधिकारी | CRC Manesar, Ministry of Corporate Affairs |
+| पंजीकृत पता | तेलहारा (नालंदा), बिहार – 801306 |
+
+सत्यापन: mca.gov.in पर CIN डालकर। प्रमाण-पत्रों की छवियाँ `assets/images/` में हैं।
+
+## दान रसीद — "दान प्रशस्ति पत्र" शैली
+
+- **₹5,000 से अधिक** → *दान प्रशस्ति पत्र (Certificate of Commendation)*
+- **₹5,000 तक** → *दान रसीद (Donation Receipt)* — वही गोल्ड फ़्रेम डिज़ाइन
+- दोनों में: CIN व PAN चिप, फाउंडेशन लोगो, मंदिर फ़ोटो, दाता का नाम, राशि (अंकों व शब्दों में), रसीद संख्या, दिनांक, नीली मुहर
+- ऐप में: दान सफल होते ही रसीद डायलॉग में यह प्रमाण-पत्र दिखता है (कॉपी बटन सहित)
+- **PDF डाउनलोड/शेयर**: रसीद डायलॉग में `PDF` (सेव/प्रिंट) और `शेयर` बटन — `printing` पैकेज, HTML→PDF (Devanagari सही रेंडर होती है)
+- पूजा/धर्मशाला पास के PDF बटन भी जुड़े हैं
+- प्रिंट/PDF के लिए HTML: `lib/utils/docs.dart` → `receiptHtml()` / `pujaPassHtml()` / `roomPassHtml()`
+- झलक देखने के लिए: `dart run tool/receipt_preview.dart` → `preview_*.html`
+
+## दान — आधिकारिक UPI / बैंक विवरण
+
+| | |
+|---|---|
+| UPI ID | 6203051369m@pnb (PNB · Scan & Pay QR ऐप में लगा है) |
+| खाता नाम | BABA SIDDHNATH MANDIR JIRNODHAR SEVA FOUNDATION |
+| खाता संख्या | 1573002100004142 |
+| बैंक | पंजाब नेशनल बैंक (PNB), तेलहारा |
+| IFSC | PUNB157300 |
+
+QR चित्र: `assets/images/donation_qr.png` · कार्ड: `lib/widgets/donation_qr_card.dart`
+(दान स्क्रीन और परिचय टैब — दोनों में दिखता है, टैप पर ज़ूम + कॉपी बटन)
 
 ## असली सेवाएँ — integration तैयार है
 

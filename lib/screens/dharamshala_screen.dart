@@ -8,6 +8,7 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/docs.dart';
 import '../utils/format.dart';
+import '../services/pdf_service.dart';
 import '../widgets/common.dart';
 import 'daan_screen.dart' show StepTag;
 
@@ -157,6 +158,23 @@ class _DharamshalaScreenState extends State<DharamshalaScreen> {
                 const SizedBox(height: 11),
                 Row(
                   children: [
+                    Expanded(
+                      child: BsmButton(
+                        label: 'PDF',
+                        icon: 'download',
+                        kind: BtnKind.gold,
+                        small: true,
+                        onPressed: () async {
+                          final ok = await PdfService.savePass(
+                            html: roomPassHtml(booking),
+                            name: 'room-pass-${booking.passId}',
+                          );
+                          if (!context.mounted) return;
+                          if (!ok) showToast(context, 'PDF नहीं बन सका');
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 9),
                     Expanded(
                       child: BsmButton(
                         label: 'पास कॉपी',

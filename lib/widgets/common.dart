@@ -28,6 +28,7 @@ const Map<String, IconData> _iconMap = {
   'chart': Icons.bar_chart_rounded,
   'bank': Icons.account_balance_rounded,
   'cash': Icons.payments_rounded,
+  'rupee': Icons.currency_rupee_rounded,
   'shield': Icons.security_rounded,
   'alert': Icons.warning_amber_rounded,
   'users': Icons.people_rounded,

@@ -9,7 +9,10 @@ import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/docs.dart';
 import '../utils/format.dart';
+import '../services/pdf_service.dart';
 import '../widgets/common.dart';
+import '../widgets/donation_certificate.dart';
+import '../widgets/donation_qr_card.dart';
 
 class DaanScreen extends StatefulWidget {
   const DaanScreen({super.key, required this.state});
@@ -322,6 +325,8 @@ class _DaanScreenState extends State<DaanScreen> {
             ],
           ),
         ),
+        const DonationQrCard(),
+
         BsmCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -381,46 +386,80 @@ class _DaanScreenState extends State<DaanScreen> {
   void _showReceipt(Donation d) {
     showDialog<void>(
       context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: C.paper,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text(
-          '80G ई-रसीद',
-          style: TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: C.maroon),
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+      builder: (ctx) => Dialog(
+        insetPadding: const EdgeInsets.all(10),
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Flexible(
+            child: SingleChildScrollView(
+              child: DonationCertificate(donation: d),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
             children: [
-              KVRow(left: 'रसीद नंबर', right: d.receipt),
-              KVRow(left: 'दाता', right: d.name),
-              KVRow(left: 'श्रेणी', right: d.cat),
-              KVRow(left: 'राशि', right: inr(d.amt)),
-              KVRow(left: 'शब्दों में', right: amountWords(d.amt), divider: false),
-              const SizedBox(height: 10),
-              const MutedText(
-                'यह रसीद धारा 80G के अंतर्गत कर छूट हेतु मान्य है। PDF के लिए README में '
-                '"printing" पैकेज जोड़ें — HTML तैयार है (utils/docs.dart)।',
+              Expanded(
+                child: BsmButton(
+                  label: 'PDF',
+                  icon: 'download',
+                  kind: BtnKind.dark,
+                  small: true,
+                  onPressed: () async {
+                    final ok = await PdfService.saveReceipt(d);
+                    if (!context.mounted) return;
+                    showToast(
+                      context,
+                      ok
+                          ? 'PDF तैयार — "Save as PDF" चुनकर सेव करें'
+                          : 'PDF नहीं बन सका, दोबारा कोशिश करें',
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: BsmButton(
+                  label: 'शेयर',
+                  icon: 'play',
+                  kind: BtnKind.ghost,
+                  small: true,
+                  onPressed: () async {
+                    final ok = await PdfService.shareReceipt(d);
+                    if (!context.mounted) return;
+                    if (!ok) showToast(context, 'PDF नहीं बन सका');
+                  },
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: BsmButton(
+                  label: 'कॉपी',
+                  icon: 'copy',
+                  kind: BtnKind.ghost,
+                  small: true,
+                  onPressed: () async {
+                    await Clipboard.setData(ClipboardData(text: receiptText(d)));
+                    if (!ctx.mounted) return;
+                    showToast(context, 'रसीद कॉपी हो गई');
+                  },
+                ),
+              ),
+              const SizedBox(width: 6),
+              Expanded(
+                child: BsmButton(
+                  label: 'बंद',
+                  kind: BtnKind.gold,
+                  small: true,
+                  onPressed: () => Navigator.of(ctx).pop(),
+                ),
               ),
             ],
           ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () async {
-              await Clipboard.setData(ClipboardData(text: receiptText(d)));
-              if (!ctx.mounted) return;
-              Navigator.of(ctx).pop();
-              showToast(context, 'रसीद कॉपी हो गई');
-            },
-            child: const Text('कॉपी करें'),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('बंद करें'),
-          ),
         ],
+        ),
       ),
     );
   }

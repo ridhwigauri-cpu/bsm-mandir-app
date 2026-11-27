@@ -4,6 +4,7 @@ import '../data/foundation_info.dart';
 import '../theme/app_colors.dart';
 import '../widgets/brand_footer.dart';
 import '../widgets/common.dart';
+import '../widgets/donation_qr_card.dart';
 
 /// "परिचय" टैब — फाउंडेशन का इतिहास, संस्थापक, परिसर और मूल दस्तावेज़
 class AboutScreen extends StatelessWidget {
@@ -164,7 +165,58 @@ class AboutScreen extends StatelessWidget {
           ),
         ),
 
-        // ── मूल दस्तावेज़ ──
+        // ── पंजीयन एवं प्रमाण ──
+        BsmCard(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const CardHead(icon: 'shield', title: 'पंजीयन एवं प्रमाण'),
+              const MutedText(
+                'संस्था भारत सरकार (MCA) के अंतर्गत Section 8 कंपनी के रूप में पंजीकृत है — '
+                'नीचे दिए प्रमाण-पत्र टैप करके पूरे आकार में पढ़े जा सकते हैं।',
+              ),
+              const SizedBox(height: 8),
+              for (var i = 0; i < FoundationInfo.registration.length; i++)
+                KVRow(
+                  left: FoundationInfo.registration[i].$1,
+                  right: FoundationInfo.registration[i].$2,
+                  divider: i != FoundationInfo.registration.length - 1,
+                ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                decoration: BoxDecoration(
+                  color: C.green2,
+                  borderRadius: BorderRadius.circular(9),
+                  border: Border.all(color: const Color(0x331E7A46)),
+                ),
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const AppIcon('check', size: 14, color: C.green),
+                    const SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        FoundationInfo.verifyNote,
+                        style: const TextStyle(fontSize: 10, color: C.green, height: 1.45),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 10),
+              _DocGrid(
+                docs: FoundationInfo.registrationDocs,
+                onTap: (doc) => _openDoc(context, doc),
+              ),
+            ],
+          ),
+        ),
+
+        // ── दान (QR / बैंक) ──
+        const DonationQrCard(),
+
+        // ── आम सूचना ──
         BsmCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -175,19 +227,9 @@ class AboutScreen extends StatelessWidget {
                 'टैप करके पूरा पढ़ें।',
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  for (var i = 0; i < FoundationInfo.documents.length; i++) ...[
-                    if (i > 0) const SizedBox(width: 8),
-                    Expanded(
-                      child: _DocumentThumb(
-                        path: FoundationInfo.documents[i],
-                        label: 'पृष्ठ ${i + 1}',
-                        onTap: () => _openDocument(context, FoundationInfo.documents[i], i + 1),
-                      ),
-                    ),
-                  ],
-                ],
+              _DocGrid(
+                docs: FoundationInfo.notices,
+                onTap: (doc) => _openDoc(context, doc),
               ),
             ],
           ),
@@ -199,7 +241,7 @@ class AboutScreen extends StatelessWidget {
     );
   }
 
-  void _openDocument(BuildContext context, String path, int page) {
+  void _openDoc(BuildContext context, RegDoc doc) {
     showDialog<void>(
       context: context,
       builder: (ctx) => Dialog(
@@ -215,7 +257,7 @@ class AboutScreen extends StatelessWidget {
                 children: [
                   Expanded(
                     child: Text(
-                      'आम सूचना — पृष्ठ $page',
+                      doc.title,
                       style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.w700,
@@ -234,7 +276,12 @@ class AboutScreen extends StatelessWidget {
               child: InteractiveViewer(
                 minScale: 1,
                 maxScale: 4,
-                child: Image.asset(path, fit: BoxFit.contain),
+                child: Image.asset(
+                  doc.image,
+                  fit: BoxFit.contain,
+                  errorBuilder: (context, error, stack) =>
+                      const Center(child: Text('दस्तावेज़ नहीं खुल सका')),
+                ),
               ),
             ),
             const SizedBox(height: 8),
@@ -489,11 +536,40 @@ class _ImageWithCaption extends StatelessWidget {
   }
 }
 
-class _DocumentThumb extends StatelessWidget {
-  const _DocumentThumb({required this.path, required this.label, required this.onTap});
+class _DocGrid extends StatelessWidget {
+  const _DocGrid({required this.docs, required this.onTap});
 
-  final String path;
-  final String label;
+  final List<RegDoc> docs;
+  final void Function(RegDoc) onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final rows = <Widget>[];
+    for (var i = 0; i < docs.length; i += 2) {
+      rows.add(
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Expanded(child: _DocTile(doc: docs[i], onTap: () => onTap(docs[i]))),
+            const SizedBox(width: 8),
+            Expanded(
+              child: i + 1 < docs.length
+                  ? _DocTile(doc: docs[i + 1], onTap: () => onTap(docs[i + 1]))
+                  : const SizedBox.shrink(),
+            ),
+          ],
+        ),
+      );
+      if (i + 2 < docs.length) rows.add(const SizedBox(height: 8));
+    }
+    return Column(children: rows);
+  }
+}
+
+class _DocTile extends StatelessWidget {
+  const _DocTile({required this.doc, required this.onTap});
+
+  final RegDoc doc;
   final VoidCallback onTap;
 
   @override
@@ -501,44 +577,65 @@ class _DocumentThumb extends StatelessWidget {
     return Material(
       borderRadius: BorderRadius.circular(12),
       clipBehavior: Clip.antiAlias,
+      color: C.cream2,
       child: InkWell(
         onTap: onTap,
-        child: Stack(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Image.asset(
-              path,
-              height: 170,
-              width: double.infinity,
-              fit: BoxFit.cover,
-              alignment: Alignment.topCenter,
-              errorBuilder: (context, error, stack) => Container(
-                height: 170,
-                color: C.cream2,
-                alignment: Alignment.center,
-                child: const AppIcon('file', size: 22, color: C.ink3),
-              ),
-            ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
-                color: const Color(0xB35E0F18),
-                child: Row(
-                  children: [
-                    const AppIcon('search', size: 11, color: C.creamText),
-                    const SizedBox(width: 4),
-                    Text(
-                      label,
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        fontWeight: FontWeight.w700,
-                        color: C.creamText,
-                      ),
-                    ),
-                  ],
+            Stack(
+              children: [
+                Image.asset(
+                  doc.image,
+                  height: 150,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                  errorBuilder: (context, error, stack) => Container(
+                    height: 150,
+                    color: C.cream2,
+                    alignment: Alignment.center,
+                    child: const AppIcon('file', size: 22, color: C.ink3),
+                  ),
                 ),
+                Positioned(
+                  right: 6,
+                  bottom: 6,
+                  child: Container(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
+                      color: Color(0xB35E0F18),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const AppIcon('search', size: 11, color: C.creamText),
+                  ),
+                ),
+              ],
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    doc.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 10.5,
+                      fontWeight: FontWeight.w700,
+                      color: C.maroon,
+                      height: 1.3,
+                    ),
+                  ),
+                  const SizedBox(height: 1),
+                  Text(
+                    doc.sub,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(fontSize: 8.5, color: C.ink3, height: 1.3),
+                  ),
+                ],
               ),
             ),
           ],

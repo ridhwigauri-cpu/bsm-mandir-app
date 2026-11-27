@@ -11,12 +11,77 @@ class FoundationInfo {
   static const String noticeDate = '05 जुलाई 2026';
   static const String partner = 'RGT Memorial Foundation';
 
+  // ── पंजीयन (MCA / आयकर विभाग के दस्तावेज़ों से) ──
+  static const String legalName = 'BABA SIDHHNATH MANDIR JIRNODHAR SEVA FOUNDATION';
+  static const String cin = 'U94910BR2026NPL085916';
+  static const String pan = 'AAOCB8762B';
+  static const String tan = 'PTNB10218F';
+  static const String section8Licence = '187252';
+  static const String entityType = 'Section 8 कंपनी · Company limited by guarantee';
+  static const String registrar = 'CRC Manesar, Ministry of Corporate Affairs';
+  static const String regAddress =
+      'C/O Rajni Kant, 25, Mozafrbad, Tarpar, Telhar, Telhara (Nalanda), Nalanda – 801306, Bihar';
+
+  /// पंजीयन की मुख्य पंक्तियाँ
+  static const List<(String, String)> registration = [
+    ('कानूनी नाम', 'BABA SIDHHNATH MANDIR\nJIRNODHAR SEVA FOUNDATION'),
+    ('CIN', 'U94910BR2026NPL085916'),
+    ('PAN', 'AAOCB8762B'),
+    ('TAN', 'PTNB10218F'),
+    ('Section 8 लाइसेंस', '187252 · 25 जून 2026'),
+    ('संस्था का प्रकार', 'Section 8 कंपनी · limited by guarantee'),
+    ('पंजीयन प्राधिकारी', 'CRC Manesar, MCA'),
+    ('पंजीकृत पता', 'तेलहारा (नालंदा), बिहार – 801306'),
+  ];
+
+  /// प्रमाण-पत्र (टैप करके पूरा देखें)
+  static const List<RegDoc> registrationDocs = [
+    RegDoc(
+      title: 'Certificate of Incorporation',
+      sub: 'CIN U94910BR2026NPL085916 · 25 जून 2026',
+      image: 'assets/images/doc_incorporation.jpg',
+    ),
+    RegDoc(
+      title: 'Section 8 लाइसेंस',
+      sub: 'लाइसेंस संख्या 187252 · CRC Manesar',
+      image: 'assets/images/doc_section8.jpg',
+    ),
+    RegDoc(
+      title: 'PAN कार्ड',
+      sub: 'AAOCB8762B · आयकर विभाग',
+      image: 'assets/images/doc_pan.jpg',
+    ),
+    RegDoc(
+      title: 'TAN आवंटन पत्र',
+      sub: 'PTNB10218F · आयकर विभाग',
+      image: 'assets/images/doc_tan.jpg',
+    ),
+  ];
+
+  /// आम सूचना के पृष्ठ
+  static const List<RegDoc> notices = [
+    RegDoc(
+      title: 'आम सूचना — पृष्ठ 1',
+      sub: '05 जुलाई 2026',
+      image: 'assets/images/doc_page_1.jpg',
+    ),
+    RegDoc(
+      title: 'आम सूचना — पृष्ठ 2',
+      sub: '05 जुलाई 2026',
+      image: 'assets/images/doc_page_2.jpg',
+    ),
+  ];
+
+  /// MCA पर सत्यापन का लिंक-पाठ
+  static const String verifyNote =
+      'उपरोक्त विवरण mca.gov.in पर CIN U94910BR2026NPL085916 डालकर स्वयं सत्यापित किया जा सकता है।';
+
   /// मुख्य आँकड़े
   static const List<(String, String)> facts = [
     ('सेवा आरंभ', 'सन् 2000'),
     ('सेवा-वर्ष', '26 वर्ष'),
     ('न्यास स्थापना', 'सितम्बर 2023'),
-    ('पंजीयन', '25 जून 2026'),
+    ('MCA पंजीयन', '25 जून 2026'),
   ];
 
   static const List<TimelineEvent> timeline = [
@@ -135,11 +200,6 @@ class FoundationInfo {
     ('assets/images/dharamshala.jpg', 'धर्मशाला', 'श्री बजरंगबली धर्मशाला, तेलहारा'),
   ];
 
-  /// मूल दस्तावेज़ (आम सूचना, 05/07/2026)
-  static const List<String> documents = [
-    'assets/images/doc_page_1.jpg',
-    'assets/images/doc_page_2.jpg',
-  ];
 }
 
 class TimelineEvent {
@@ -170,4 +230,13 @@ class PersonInfo {
   final String role;
   final String body;
   final List<String> images;
+}
+
+/// दस्तावेज़ (प्रमाण-पत्र) का विवरण
+class RegDoc {
+  const RegDoc({required this.title, required this.sub, required this.image});
+
+  final String title;
+  final String sub;
+  final String image;
 }
