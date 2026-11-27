@@ -1,14 +1,12 @@
-import org.jetbrains.kotlin.gradle.dsl.JvmTarget
-
 plugins {
     id("com.android.application")
-    id("org.jetbrains.kotlin.android")
+    // Flutter Gradle Plugin, Android प्लगइन के बाद ही लगना चाहिए।
     id("dev.flutter.flutter-gradle-plugin")
 }
 
 android {
     namespace = "org.bsmfoundation.bsm_mandir"
-    compileSdk = 36
+    compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
@@ -19,7 +17,7 @@ android {
     defaultConfig {
         applicationId = "org.bsmfoundation.bsm_mandir"
         minSdk = flutter.minSdkVersion
-        targetSdk = 36
+        targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -34,7 +32,7 @@ android {
 
 kotlin {
     compilerOptions {
-        jvmTarget.set(JvmTarget.JVM_17)
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
     }
 }
 
