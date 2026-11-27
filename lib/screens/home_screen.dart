@@ -4,6 +4,7 @@ import '../data/app_state.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_theme.dart';
 import '../utils/format.dart';
+import '../widgets/brand_footer.dart';
 import '../widgets/common.dart';
 
 class _Tile {
@@ -187,6 +188,7 @@ class HomeScreen extends StatelessWidget {
             ],
           ),
         ),
+        const BrandFooter(),
         const BsmCard(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,

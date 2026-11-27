@@ -60,4 +60,16 @@ void main() {
     expect(find.text('एडमिन डैशबोर्ड — फाउंडेशन प्रबंधन'), findsOneWidget);
     expect(find.text('₹25,00,000'), findsWidgets);
   });
+
+  testWidgets('परिचय टैब में फाउंडेशन का इतिहास दिखता है', (tester) async {
+    await tester.pumpWidget(_wrap(const RootShell()));
+    await _settle(tester);
+
+    await tester.tap(find.text('परिचय'));
+    await _settle(tester);
+
+    expect(find.text('हमारी कहानी'), findsOneWidget);
+    expect(find.text('सेवा-इतिहास (क्रमवार)'), findsOneWidget);
+    expect(find.textContaining('25 जून 2026'), findsWidgets);
+  });
 }

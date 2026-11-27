@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'data/app_state.dart';
+import 'screens/about_screen.dart';
 import 'screens/admin_login_screen.dart';
 import 'screens/admin_screen.dart';
 import 'screens/daan_screen.dart';
@@ -26,6 +27,7 @@ const List<_TabItem> _tabs = [
   _TabItem('darshan', 'दर्शन', 'video'),
   _TabItem('puja', 'पूजा', 'temple'),
   _TabItem('dharamshala', 'धर्मशाला', 'bed'),
+  _TabItem('about', 'परिचय', 'info'),
 ];
 
 /// ऐप का ढाँचा: हेडर + बॉटम टैब + एडमिन/AI सुरक्षा व्यू
@@ -101,6 +103,7 @@ class _RootShellState extends State<RootShell> {
             const DarshanScreen(),
             PujaScreen(state: state),
             DharamshalaScreen(state: state),
+            const AboutScreen(),
           ],
         );
     }
@@ -234,7 +237,7 @@ class _BottomTabs extends StatelessWidget {
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                          padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 4),
                           decoration: BoxDecoration(
                             color: current == t.key ? C.amber2 : Colors.transparent,
                             borderRadius: BorderRadius.circular(10),
@@ -249,7 +252,7 @@ class _BottomTabs extends StatelessWidget {
                           t.label,
                           maxLines: 1,
                           style: TextStyle(
-                            fontSize: 9,
+                            fontSize: 8.5,
                             fontWeight: current == t.key ? FontWeight.w700 : FontWeight.w600,
                             color: current == t.key ? C.maroon2 : const Color(0xFF9A8288),
                           ),
