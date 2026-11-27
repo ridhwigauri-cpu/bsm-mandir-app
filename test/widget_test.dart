@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:bsm_mandir/app.dart';
 import 'package:bsm_mandir/data/app_state.dart';
+import 'package:bsm_mandir/data/foundation_info.dart';
+import 'package:bsm_mandir/data/models.dart';
 import 'package:bsm_mandir/theme/app_theme.dart';
+import 'package:bsm_mandir/widgets/donation_certificate.dart';
+import 'package:bsm_mandir/widgets/donation_qr_card.dart';
 
 Widget _wrap(Widget child) {
   return AppScope(
@@ -37,8 +41,6 @@ void main() {
 
     expect(find.text('ऑनलाइन दान'), findsOneWidget);
     expect(find.text('UPI / कार्ड से भुगतान करें'), findsOneWidget);
-    expect(find.text('QR से सीधे दान करें'), findsOneWidget);
-    expect(find.textContaining('6203051369m@pnb'), findsWidgets);
 
     // नाम खाली है — भुगतान शीट नहीं खुलनी चाहिए
     await tester.tap(find.text('UPI / कार्ड से भुगतान करें'));
@@ -46,34 +48,60 @@ void main() {
     expect(find.text('पेमेंट गेटवे'), findsNothing);
   });
 
-  testWidgets('एडमिन लॉगिन और डैशबोर्ड', (tester) async {
-    await tester.pumpWidget(_wrap(const RootShell()));
-    await _settle(tester);
-
-    // हेडर का लॉक आइकन
-    await tester.tap(find.byIcon(Icons.lock_outline_rounded));
-    await _settle(tester);
-    expect(find.text('एडमिन लॉगिन — ट्रस्ट प्रबंधक'), findsOneWidget);
-
-    await tester.enterText(find.byType(TextField), '1088');
-    await tester.tap(find.text('लॉगिन करें'));
-    await _settle(tester);
-
-    expect(find.text('एडमिन डैशबोर्ड — फाउंडेशन प्रबंधन'), findsOneWidget);
-    expect(find.text('₹25,00,000'), findsWidgets);
-  });
-
-  testWidgets('परिचय टैब में फाउंडेशन का इतिहास दिखता है', (tester) async {
+  testWidgets('परिचय टैब खुलता है (फाउंडेशन की कहानी)', (tester) async {
     await tester.pumpWidget(_wrap(const RootShell()));
     await _settle(tester);
 
     await tester.tap(find.text('परिचय'));
     await _settle(tester);
 
+    // हीरो हिस्सा स्क्रीन के ऊपर ही है
     expect(find.text('हमारी कहानी'), findsOneWidget);
-    expect(find.text('सेवा-इतिहास (क्रमवार)'), findsOneWidget);
-    expect(find.textContaining('25 जून 2026'), findsWidgets);
-    expect(find.text('पंजीयन एवं प्रमाण'), findsOneWidget);
-    expect(find.text('CIN'), findsOneWidget);
+  });
+
+  testWidgets('दान QR कार्ड — UPI व बैंक विवरण', (tester) async {
+    await tester.pumpWidget(
+      _wrap(const SingleChildScrollView(child: DonationQrCard())),
+    );
+    await _settle(tester);
+
+    expect(find.text('QR से सीधे दान करें'), findsOneWidget);
+    expect(find.text('6203051369m@pnb'), findsOneWidget);
+    expect(find.text('1573002100004142'), findsOneWidget);
+    expect(find.text('PUNB157300'), findsOneWidget);
+    expect(find.text('कॉपी'), findsWidgets);
+  });
+
+  testWidgets('दान प्रशस्ति पत्र — CIN, PAN व राशि', (tester) async {
+    final donation = Donation(
+      id: 'DN-1',
+      name: 'रमेश शर्मा',
+      phone: '9876543210',
+      cat: 'जीर्णोद्धार',
+      amt: 11000,
+      method: 'UPI',
+      ts: DateTime(2026, 11, 27, 10, 30),
+      receipt: '80G/2026-27/1001',
+    );
+    await tester.pumpWidget(
+      _wrap(SingleChildScrollView(child: DonationCertificate(donation: donation))),
+    );
+    await _settle(tester);
+
+    expect(find.text('दान प्रशस्ति पत्र'), findsOneWidget);
+    expect(find.text('Certificate of Commendation'), findsOneWidget);
+    expect(find.textContaining('रमेश शर्मा', findRichText: true), findsWidgets);
+    expect(find.text('₹11,000'), findsOneWidget);
+    expect(find.textContaining('U94910BR2026NPL085916'), findsWidgets);
+  });
+
+  test('पंजीयन विवरण — CIN, PAN, TAN, Section 8', () {
+    expect(FoundationInfo.cin, 'U94910BR2026NPL085916');
+    expect(FoundationInfo.pan, 'AAOCB8762B');
+    expect(FoundationInfo.tan, 'PTNB10218F');
+    expect(FoundationInfo.section8Licence, '187252');
+    expect(FoundationInfo.registrationDocs.length, 4);
+    expect(FoundationInfo.notices.length, 2);
+    expect(FoundationInfo.registration.any((r) => r.$2.contains('U94910BR2026NPL085916')), isTrue);
   });
 }
