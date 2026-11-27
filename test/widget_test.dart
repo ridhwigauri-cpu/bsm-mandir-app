@@ -61,7 +61,7 @@ void main() {
 
   testWidgets('दान QR कार्ड — UPI व बैंक विवरण', (tester) async {
     await tester.pumpWidget(
-      _wrap(const SingleChildScrollView(child: DonationQrCard())),
+      _wrap(const Scaffold(body: SingleChildScrollView(child: DonationQrCard()))),
     );
     await _settle(tester);
 
@@ -84,7 +84,11 @@ void main() {
       receipt: '80G/2026-27/1001',
     );
     await tester.pumpWidget(
-      _wrap(SingleChildScrollView(child: DonationCertificate(donation: donation))),
+      _wrap(
+        Scaffold(
+          body: SingleChildScrollView(child: DonationCertificate(donation: donation)),
+        ),
+      ),
     );
     await _settle(tester);
 
