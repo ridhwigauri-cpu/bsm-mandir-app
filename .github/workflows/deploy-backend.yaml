@@ -1,0 +1,103 @@
+name: Deploy Backend to Neon
+
+# Sirf tab chalta hai jab backend/ me kuch badle — Flutter ke changes par nahi.
+# Repo → Settings → Secrets and variables → Actions:
+#   Secrets   : NEON_API_KEY, JWT_SECRET, ADMIN_PIN, SERVICE_KEY,
+#               RAZORPAY_KEY_ID, RAZORPAY_KEY_SECRET, RAZORPAY_WEBHOOK_SECRET
+#               (optional: FIREBASE_SERVICE_ACCOUNT)
+#   Variables : NEON_PROJECT_ID = soft-fire-58337300   (optional: AARTI_TIMES)
+
+on:
+  push:
+    branches: [main, master]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yaml'
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-neon-backend-${{ github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    working-directory: backend
+
+jobs:
+  test:
+    name: Backend build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build (syntax + assets)
+        run: npm run build
+
+      - name: Tests (33)
+        run: npm test
+
+  deploy:
+    name: Deploy functions
+    needs: test
+    runs-on: ubuntu-latest
+    env:
+      NEON_API_KEY: ${{ secrets.NEON_API_KEY }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      ADMIN_PIN: ${{ secrets.ADMIN_PIN }}
+      SERVICE_KEY: ${{ secrets.SERVICE_KEY }}
+      RAZORPAY_KEY_ID: ${{ secrets.RAZORPAY_KEY_ID }}
+      RAZORPAY_KEY_SECRET: ${{ secrets.RAZORPAY_KEY_SECRET }}
+      RAZORPAY_WEBHOOK_SECRET: ${{ secrets.RAZORPAY_WEBHOOK_SECRET }}
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      AARTI_TIMES: ${{ vars.AARTI_TIMES || '06:30,12:00,19:00' }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Neon CLI
+        run: npm install -g neon@latest
+
+      - name: Deploy to Neon (production branch)
+        run: |
+          neon deploy \
+            --project-id "${{ vars.NEON_PROJECT_ID }}" \
+            --branch production \
+            --update-existing \
+            --allow-protected \
+            --no-env-pull
+
+      - name: Function URLs to workflow summary
+        run: |
+          echo "## Neon Functions - deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          neon functions list \
+            --project-id "${{ vars.NEON_PROJECT_ID }}" \
+            --branch production -o json \
+            | jq -r '.[] | "- **\(.slug)** -> \(.invocation_url)"' >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "_app_config.dart me apiBaseUrl = api function ka URL daalein_" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Triggers (scheduled jobs)
+        run: |
+          echo "### Scheduled triggers" >> "$GITHUB_STEP_SUMMARY"
+          neon triggers list \
+            --project-id "${{ vars.NEON_PROJECT_ID }}" \
+            --branch production 2>/dev/null \
+            | head -20 >> "$GITHUB_STEP_SUMMARY" || echo "_koi trigger nahi mila_" >> "$GITHUB_STEP_SUMMARY"
