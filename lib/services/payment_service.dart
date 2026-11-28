@@ -47,6 +47,7 @@ class PaymentService {
     required String name,
     required String phone,
     required String description,
+    String? orderId,
   }) {
     if (_busy) return;
     _busy = true;
@@ -79,10 +80,10 @@ class PaymentService {
         'name': name,
         if (phone.isNotEmpty) 'contact': phone,
       },
-      'theme': {'color': '#5E0F18'},
+      'theme': {'color': '#B34700'},
       'retry': {'enabled': true, 'max_count': 3},
-      // बैकएंड तैयार होने पर:
-      // 'order_id': <सर्वर से बना order id>,
+      // Neon बैकएंड से बना order id (जुड़ा हो तो)
+      if (orderId != null && orderId.isNotEmpty) 'order_id': orderId,
     };
 
     try {
@@ -95,9 +96,8 @@ class PaymentService {
 
   void _onSuccess(PaymentSuccessResponse response) {
     _busy = false;
-    // TODO(backend): यहाँ सर्वर से signature verify कराएँ:
-    //   POST ${AppConfig.apiBaseUrl}/payments/verify
-    //   {order_id, payment_id, signature} → ok मिलने पर ही रसीद जारी करें।
+    // सर्वर से signature verify (DaanScreen में `ApiClient.verifyDonation`) —
+    // वहीं रसीद नंबर सर्वर से आता है, ताकि क्रम न टूटे।
     onResult(PayResult(
       status: PayStatus.success,
       paymentId: response.paymentId ?? '',

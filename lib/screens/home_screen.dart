@@ -7,6 +7,8 @@ import '../utils/format.dart';
 import '../widgets/brand_footer.dart';
 import '../widgets/common.dart';
 import '../widgets/three_d.dart';
+import '../data/api_models.dart';
+import '../services/api_client.dart';
 
 class _Tile {
   const _Tile(this.tab, this.icon, this.title, this.desc);
@@ -70,8 +72,8 @@ class HomeScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                inr(funds.total),
+              _LiveTotal(
+                fallback: funds.total,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.w800,
@@ -283,6 +285,26 @@ class HomeScreen extends StatelessWidget {
           BadgeC(text: a.status, tone: a.tone),
         ],
       ),
+    );
+  }
+}
+
+/// असली जोड़ (Neon से) — न मिले तो स्थानीय (डेमो) आँकड़ा
+class _LiveTotal extends StatelessWidget {
+  const _LiveTotal({required this.fallback, required this.style});
+
+  final int fallback;
+  final TextStyle style;
+
+  @override
+  Widget build(BuildContext context) {
+    if (!ApiClient.instance.enabled) return Text(inr(fallback), style: style);
+    return FutureBuilder<AdminSummary>(
+      future: ApiClient.instance.publicSummary(),
+      builder: (context, snap) {
+        final total = snap.hasData ? snap.data!.totalPaid : fallback;
+        return Text(inr(total), style: style);
+      },
     );
   }
 }

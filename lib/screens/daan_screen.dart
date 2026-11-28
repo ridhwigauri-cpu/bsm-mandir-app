@@ -10,6 +10,8 @@ import '../theme/app_theme.dart';
 import '../utils/docs.dart';
 import '../utils/format.dart';
 import '../services/announcement_service.dart';
+import '../data/api_models.dart';
+import '../services/api_client.dart';
 import '../services/pdf_service.dart';
 import '../widgets/common.dart';
 import '../widgets/three_d.dart';
@@ -35,6 +37,7 @@ class _DaanScreenState extends State<DaanScreen> {
   Donation? _done;
 
   late final PaymentService _payment;
+  DonationOrder? _order; // Neon बैकएंड से बना ऑर्डर (जुड़ा हो तो)
 
   @override
   void initState() {
@@ -49,18 +52,47 @@ class _DaanScreenState extends State<DaanScreen> {
   }
 
   /// Razorpay (या डेमो) से भुगतान का नतीजा
-  void _handlePayment(PayResult result) {
+  Future<void> _handlePayment(PayResult result) async {
     if (!mounted) return;
     setState(() => _busy = false);
 
     if (result.isPaid) {
-      final donation = widget.state.addDonation(
+      var donation = widget.state.addDonation(
         name: _name.trim(),
         phone: _phone.trim(),
         cat: _cat,
         amt: _amount,
         method: _payment.isLive ? 'Razorpay' : _method,
       );
+
+      // सर्वर से signature सत्यापन — रसीद नंबर सर्वर से आता है (क्रम न टूटे)
+      final order = _order;
+      if (order != null && result.paymentId.isNotEmpty) {
+        try {
+          final receipt = await ApiClient.instance.verifyDonation(
+            donationId: order.donationId,
+            orderId: result.orderId.isEmpty ? order.orderId : result.orderId,
+            paymentId: result.paymentId,
+            signature: result.signature,
+          );
+          if (receipt.isPaid && receipt.receipt.isNotEmpty) {
+            donation = Donation(
+              id: donation.id,
+              name: donation.name,
+              phone: donation.phone,
+              cat: donation.cat,
+              amt: donation.amt,
+              method: donation.method,
+              ts: donation.ts,
+              receipt: receipt.receipt,
+            );
+          }
+        } catch (e) {
+          if (mounted) showToast(context, 'रसीद सत्यापन में गड़बड़: $e');
+        }
+      }
+      _order = null;
+
       setState(() => _done = donation);
       showToast(
         context,
@@ -109,15 +141,34 @@ class _DaanScreenState extends State<DaanScreen> {
       context,
       StatefulBuilder(
         builder: (sheetContext, setSheetState) {
-          void confirm() {
+          Future<void> confirm() async {
             setSheetState(() => _busy = true);
             Navigator.of(sheetContext).pop();
+
+            // Neon बैकएंड जुड़ा हो तो पहले सर्वर से ऑर्डर (रसीद क्रम सर्वर पर)
+            if (ApiClient.instance.enabled) {
+              try {
+                _order = await ApiClient.instance.createDonationOrder(
+                  name: _name.trim(),
+                  phone: _phone.trim(),
+                  category: _cat,
+                  amount: _amount,
+                );
+              } catch (e) {
+                if (!mounted) return;
+                setState(() => _busy = false);
+                showToast(context, 'ऑर्डर नहीं बन सका: $e');
+                return;
+              }
+            }
+
             // key भरी हो तो Razorpay चेकआउट खुलता है, वरना डेमो भुगतान
             _payment.start(
               amountRupees: _amount,
               name: _name.trim(),
               phone: _phone.trim(),
               description: '$_cat दान',
+              orderId: _order?.orderId,
             );
           }
 

@@ -11,6 +11,7 @@ import '../utils/format.dart';
 import '../services/pdf_service.dart';
 import '../widgets/common.dart';
 import '../widgets/three_d.dart';
+import '../services/api_client.dart';
 import 'daan_screen.dart' show StepTag;
 
 class PujaScreen extends StatefulWidget {
@@ -23,6 +24,25 @@ class PujaScreen extends StatefulWidget {
 }
 
 class _PujaScreenState extends State<PujaScreen> {
+  Map<String, int> _remoteTaken = const {}; // Neon से स्लॉट की असली स्थिति
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemoteSlots();
+  }
+
+  Future<void> _loadRemoteSlots() async {
+    if (!ApiClient.instance.enabled) return;
+    try {
+      final slots = await ApiClient.instance.pujaSlots(date: _date);
+      if (!mounted) return;
+      setState(() => _remoteTaken = {for (final s in slots) s.slot: s.taken});
+    } catch (_) {
+      // न मिले तो स्थानीय (डेमो) गिनती ही चलेगी
+    }
+  }
+
   String _type = BaseData.pujaTypes.first;
   String _date = nextDates(5)[1].key;
   String _slot = '09:00 – 10:00';
@@ -248,7 +268,8 @@ class _PujaScreenState extends State<PujaScreen> {
                   items: BaseData.pujaSlots,
                   selected: _slot,
                   columns: 2,
-                  enabledFor: (s) => state.pujaTaken(s, _date) < BaseData.slotCap,
+                  enabledFor: (s) =>
+                      (_remoteTaken[s] ?? state.pujaTaken(s, _date)) < BaseData.slotCap,
                   labelFor: (s) => state.pujaTaken(s, _date) >= BaseData.slotCap ? '$s · भर गया' : s,
                   onSelect: (s) => setState(() => _slot = s),
                 ),

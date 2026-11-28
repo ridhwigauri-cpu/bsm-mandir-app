@@ -11,6 +11,8 @@ import '../utils/format.dart';
 import '../services/pdf_service.dart';
 import '../widgets/common.dart';
 import '../widgets/three_d.dart';
+import '../data/api_models.dart';
+import '../services/api_client.dart';
 import 'daan_screen.dart' show StepTag;
 
 class DharamshalaScreen extends StatefulWidget {
@@ -23,6 +25,23 @@ class DharamshalaScreen extends StatefulWidget {
 }
 
 class _DharamshalaScreenState extends State<DharamshalaScreen> {
+  RoomsState? _remote; // Neon से कमरों की स्थिति
+
+  @override
+  void initState() {
+    super.initState();
+    _loadRemoteRooms();
+  }
+
+  Future<void> _loadRemoteRooms() async {
+    if (!ApiClient.instance.enabled) return;
+    try {
+      final rooms = await ApiClient.instance.rooms();
+      if (!mounted) return;
+      setState(() => _remote = rooms);
+    } catch (_) {}
+  }
+
   String _roomId = '';
   String _kirtan = '';
   String _date = nextDates(5).first.key;
@@ -107,10 +126,12 @@ class _DharamshalaScreenState extends State<DharamshalaScreen> {
 
     return BsmScreen(
       children: [
-        const FeatheredBanner(
+        FeatheredBanner(
           image: 'assets/images/dharamshala_original.jpg',
           title: 'श्री बजरंगबली धर्मशाला',
-          subtitle: 'तेलहारा · कमरा व अखंड कीर्तन बुकिंग',
+          subtitle: _remote == null
+              ? 'तेलहारा · कमरा व अखंड कीर्तन बुकिंग'
+              : 'अभी ${_remote!.availableCount} कमरे उपलब्ध · कुल ${_remote!.rooms.length}',
           badge: 'धर्मशाला बुकिंग',
         ),
         if (booking != null)
