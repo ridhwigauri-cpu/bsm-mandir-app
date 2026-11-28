@@ -1,7 +1,7 @@
 name: bsm_mandir
 description: "बाबा सिद्धनाथ मंदिर जीर्णोद्धार सेवा फाउंडेशन — डिजिटल प्रबंधन एवं AI सुरक्षा ऐप"
 publish_to: 'none'
-version: 1.8.0+10
+version: 1.8.1+11
 
 environment:
   sdk: ^3.14.0

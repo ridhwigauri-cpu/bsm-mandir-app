@@ -5,6 +5,14 @@ import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 import 'package:bsm_mandir/services/api_client.dart';
 
+/// हर नकली जवाब JSON + UTF-8 — वरना http पैकेज हिंदी को latin1 में encode करने की
+/// कोशिश करके "Contains invalid characters" फेंकता है
+http.Response jsonRes(Object body, [int status = 200]) => http.Response(
+      body is String ? body : jsonEncode(body),
+      status,
+      headers: {'content-type': 'application/json; charset=utf-8'},
+    );
+
 /// नकली सर्वर — असली Neon बैकएंड जैसे ही जवाब देता है
 MockClient fakeServer({Map<String, dynamic>? lastBody, List<String>? calls}) {
   return MockClient((request) async {
@@ -15,69 +23,53 @@ MockClient fakeServer({Map<String, dynamic>? lastBody, List<String>? calls}) {
     final path = request.url.path;
 
     if (path == '/health') {
-      return http.Response(jsonEncode({'ok': true}), 200,
-          headers: {'content-type': 'application/json'});
+      return jsonRes({'ok': true});
     }
     if (path == '/api/auth/login') {
       final body = jsonDecode(request.body) as Map<String, dynamic>;
       if (body['pin'] == '1088') {
-        return http.Response(jsonEncode({'token': 'tok123'}), 200);
+        return jsonRes({'token': 'tok123'});
       }
-      return http.Response(jsonEncode({'error': 'गलत पिन'}), 401);
+      return jsonRes({'error': 'गलत पिन'}, 401);
     }
     if (path == '/api/donations/order') {
-      return http.Response(
-        jsonEncode({'donationId': 7, 'orderId': 'order_x', 'amount': 1100, 'demo': true}),
-        201,
-      );
+      return jsonRes({'donationId': 7, 'orderId': 'order_x', 'amount': 1100, 'demo': true}, 201);
     }
     if (path == '/api/donations/verify') {
-      return http.Response(
-        jsonEncode({
+      return jsonRes({
           'status': 'paid',
           'receipt': '80G/2026-27/1001',
           'receiptPdfUrl': '/api/reports/receipt/7.pdf?token=abc',
           'announcement': 'जय बाबा सिद्धनाथ! श्री रमेश शर्मा जी ने ₹1,100 का दान दिया।',
-        }),
-        200,
-      );
+        }, 200);
     }
     if (path == '/api/puja/slots') {
-      return http.Response(
-        jsonEncode({
+      return jsonRes({
           'date': '2026-12-01',
           'capacity': 6,
           'slots': [
             {'slot': '09:00 – 10:00', 'taken': 6, 'left': 0, 'full': true},
             {'slot': '11:00 – 12:00', 'taken': 2, 'left': 4, 'full': false},
           ],
-        }),
-        200,
-      );
+        }, 200);
     }
     if (path == '/api/rooms') {
-      return http.Response(
-        jsonEncode({
+      return jsonRes({
           'date': '2026-12-01',
           'rooms': [
             {'id': 'R1', 'name': 'कमरा 1', 'capacity': 2, 'available': true},
             {'id': 'R2', 'name': 'कमरा 2', 'capacity': 2, 'available': false},
           ],
           'kirtan': [{'slot': '09:00 – 11:00', 'taken': 1, 'left': 3, 'full': false}],
-        }),
-        200,
-      );
+        }, 200);
     }
     if (path == '/api/admin/public/summary') {
-      return http.Response(
-        jsonEncode({
+      return jsonRes({
           'donations': {'total_paid': 251000, 'count_paid': 42},
           'rooms': {'total': 6, 'occupied': 2},
-        }),
-        200,
-      );
+        }, 200);
     }
-    return http.Response(jsonEncode({'error': 'रास्ता नहीं मिला'}), 404);
+    return jsonRes({'error': 'रास्ता नहीं मिला'}, 404);
   });
 }
 

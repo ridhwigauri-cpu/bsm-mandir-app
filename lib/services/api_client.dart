@@ -74,7 +74,9 @@ class ApiClient {
 
     dynamic json;
     try {
-      json = res.body.isEmpty ? null : jsonDecode(res.body);
+      // सर्वर charset न भेजे तो भी हिंदी ठीक पढ़ी जाए — बाइट्स से UTF-8
+      final text = res.bodyBytes.isEmpty ? '' : utf8.decode(res.bodyBytes, allowMalformed: true);
+      json = text.isEmpty ? null : jsonDecode(text);
     } catch (_) {
       json = null;
     }
