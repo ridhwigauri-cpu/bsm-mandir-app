@@ -1,0 +1,208 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  बाबा सिद्धनाथ मंदिर — API (Lambda + Neon Postgres + HTTP API)
+  Node 20 · arm64 · API Gateway HTTP API · EventBridge (आरती अलर्ट) · S3 (रिपोर्ट)
+
+Parameters:
+  Stage:
+    Type: String
+    Default: prod
+    AllowedValues: [prod, dev]
+
+  NeonDatabaseUrl:
+    Type: String
+    NoEcho: true
+    Description: >
+      Neon का **pooled** connection string
+      (जैसे postgresql://user:pass@ep-xxx-pooler.ap-south-1.aws.neon.tech/bsm?sslmode=require)
+
+  AdminPin:
+    Type: String
+    Default: "1088"
+    NoEcho: true
+
+  ServiceKey:
+    Type: String
+    NoEcho: true
+    Description: AI सुरक्षा सर्विस और PA डिवाइस की साझा key
+
+  JwtSecret:
+    Type: String
+    NoEcho: true
+    Description: लंबा रैंडम — openssl rand -hex 32
+
+  RazorpayKeyId:
+    Type: String
+    Default: ""
+
+  RazorpayKeySecret:
+    Type: String
+    Default: ""
+    NoEcho: true
+
+  RazorpayWebhookSecret:
+    Type: String
+    Default: ""
+    NoEcho: true
+
+  FirebaseServiceAccountJson:
+    Type: String
+    Default: ""
+    NoEcho: true
+    Description: service-account JSON का पूरा टेक्स्ट (एक लाइन में)
+
+  AartiTimes:
+    Type: String
+    Default: "06:30,12:00,19:00"
+
+  MemorySize:
+    Type: Number
+    Default: 1024
+
+Globals:
+  Function:
+    Runtime: nodejs20.x
+    Architectures: [arm64]
+    Timeout: 29
+    MemorySize: !Ref MemorySize
+    Environment:
+      Variables:
+        NODE_ENV: production
+        DATABASE_URL: !Ref NeonDatabaseUrl
+        DB_MAX_CONNECTIONS: "3"
+        ADMIN_PIN: !Ref AdminPin
+        SERVICE_KEY: !Ref ServiceKey
+        JWT_SECRET: !Ref JwtSecret
+        RAZORPAY_KEY_ID: !Ref RazorpayKeyId
+        RAZORPAY_KEY_SECRET: !Ref RazorpayKeySecret
+        RAZORPAY_WEBHOOK_SECRET: !Ref RazorpayWebhookSecret
+        FIREBASE_SERVICE_ACCOUNT: !Ref FirebaseServiceAccountJson
+        AARTI_TIMES: !Ref AartiTimes
+        REPORTS_BUCKET: !Ref ReportsBucket
+        CORS_ORIGINS: "*"
+
+Resources:
+  # ── रिपोर्ट (PDF/Excel) के लिए अस्थायी बकेट ──
+  ReportsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "bsm-reports-${AWS::AccountId}-${Stage}"
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      LifecycleConfiguration:
+        Rules:
+          - Id: expire-reports
+            Status: Enabled
+            ExpirationInDays: 1
+
+  # ── API फ़ंक्शन ──
+  ApiFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "bsm-api-${Stage}"
+      CodeUri: .
+      Handler: src/lambda.handler
+      Description: BSM Mandir API — donations, puja, rooms, announcements, reports
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref ReportsBucket
+      Events:
+        # सारे HTTP रास्ते (catch-all)
+        HttpApi:
+          ApiId: !Ref HttpApi
+          Method: ANY
+          Path: /{proxy+}
+        Root:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: ANY
+            Path: /
+        # आरती अलर्ट — रोज़ तीन बार (UTC में; IST = UTC + 5:30)
+        AartiMorning:
+          Type: Schedule
+          Properties:
+            Schedule: "cron(0 1 * * ? *)"     # 06:30 IST
+            Description: मंगला आरती
+            Enabled: true
+        AartiNoon:
+          Type: Schedule
+          Properties:
+            Schedule: "cron(30 6 * * ? *)"    # 12:00 IST
+            Description: भोग आरती
+            Enabled: true
+        AartiEvening:
+          Type: Schedule
+          Properties:
+            Schedule: "cron(30 13 * * ? *)"   # 19:00 IST
+            Description: संध्या आरती
+            Enabled: true
+
+  # ── HTTP API (सस्ता: $1 प्रति दस लाख requests) ──
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: $default
+      CorsConfiguration:
+        AllowOrigins: ["*"]
+        AllowHeaders: ["Content-Type", "Authorization", "x-service-key"]
+        AllowMethods: ["GET", "POST", "OPTIONS"]
+        MaxAge: 3600
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 300
+        ThrottlingRateLimit: 150
+
+  # ── लॉग 7 दिन रखें (खर्च काबू में) ──
+  ApiLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/bsm-api-${Stage}"
+      RetentionInDays: 7
+
+  # ── अलर्ट ──
+  ErrorAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "bsm-api-${Stage}-errors"
+      AlarmDescription: "API में 5 मिनट में 5 से ज़्यादा error"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 5
+      ComparisonOperator: GreaterThanThreshold
+
+  ThrottleAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "bsm-api-${Stage}-throttles"
+      AlarmDescription: "Lambda throttle — concurrency बढ़ानी पड़ सकती है"
+      Namespace: AWS/Lambda
+      MetricName: Throttles
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref ApiFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+
+Outputs:
+  ApiUrl:
+    Description: API का पता (ऐप के AppConfig में apiBaseUrl यही डालें)
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com"
+
+  FunctionName:
+    Value: !Ref ApiFunction
+
+  ReportsBucketName:
+    Value: !Ref ReportsBucket
